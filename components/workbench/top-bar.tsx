@@ -1,10 +1,19 @@
 interface TopBarProps {
+  copyStatus: "idle" | "copying" | "success" | "error";
   exportStatus: "idle" | "exporting" | "success" | "error";
   exportMessage: string | null;
+  onCopyPlainText: () => void;
   onExport: () => void;
 }
 
-export default function TopBar({ exportStatus, exportMessage, onExport }: TopBarProps) {
+export default function TopBar({
+  copyStatus,
+  exportStatus,
+  exportMessage,
+  onCopyPlainText,
+  onExport,
+}: TopBarProps) {
+  const copyButtonLabel = copyStatus === "copying" ? "复制中..." : "复制纯文本";
   const buttonLabel = exportStatus === "exporting" ? "导出中..." : "导出 PNG / ZIP";
 
   return (
@@ -17,6 +26,14 @@ export default function TopBar({ exportStatus, exportMessage, onExport }: TopBar
         <p aria-live="polite" className="min-h-[20px] text-sm text-slate-500" role="status">
           {exportMessage}
         </p>
+        <button
+          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+          disabled={copyStatus === "copying"}
+          onClick={onCopyPlainText}
+          type="button"
+        >
+          {copyButtonLabel}
+        </button>
         <button
           className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
           disabled={exportStatus === "exporting"}
