@@ -20,27 +20,27 @@ type MarkdownTableCell = {
   tokens?: MarkdownToken[];
 };
 
-function stripHtmlTags(input: string) {
+function stripHtmlTags(input: string): string {
   return input.replace(/<[^>]+>/g, "");
 }
 
-function normalizeInlineText(input: string) {
+function normalizeInlineText(input: string): string {
   return input.replace(/\r/g, "").replace(/\u00a0/g, " ");
 }
 
-function normalizePlainText(input: string) {
+function normalizePlainText(input: string): string {
   return normalizeInlineText(input)
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
-function withBlockBreak(text: string) {
+function withBlockBreak(text: string): string {
   const normalized = normalizePlainText(text);
   return normalized ? `${normalized}\n\n` : "";
 }
 
-function renderInlineTokens(tokens: MarkdownToken[] | undefined) {
+function renderInlineTokens(tokens: MarkdownToken[] | undefined): string {
   if (!tokens?.length) {
     return "";
   }
@@ -48,7 +48,7 @@ function renderInlineTokens(tokens: MarkdownToken[] | undefined) {
   return tokens.map(renderInlineToken).join("");
 }
 
-function renderInlineToken(token: MarkdownToken) {
+function renderInlineToken(token: MarkdownToken): string {
   switch (token.type) {
     case "strong":
     case "em":
@@ -71,11 +71,11 @@ function renderInlineToken(token: MarkdownToken) {
   }
 }
 
-function renderTableCell(cell: MarkdownTableCell) {
+function renderTableCell(cell: MarkdownTableCell): string {
   return cell.tokens?.length ? renderInlineTokens(cell.tokens) : cell.text ?? "";
 }
 
-function renderListItem(item: MarkdownListItem) {
+function renderListItem(item: MarkdownListItem): string {
   if (!item.tokens?.length) {
     return item.text ?? "";
   }
@@ -114,11 +114,11 @@ function renderBlockToken(token: MarkdownToken): string {
   }
 }
 
-function renderBlockTokens(tokens: MarkdownToken[]) {
+function renderBlockTokens(tokens: MarkdownToken[]): string {
   return tokens.map(renderBlockToken).join("");
 }
 
-export async function parsePlainText(markdown: string) {
+export async function parsePlainText(markdown: string): Promise<string> {
   const tokens = marked.lexer(markdown) as MarkdownToken[];
   return normalizePlainText(renderBlockTokens(tokens));
 }
