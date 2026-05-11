@@ -1,15 +1,46 @@
 <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="256" height="256" rx="64" fill="url(#bg)"/>
-  <rect x="44" y="40" width="168" height="176" rx="28" fill="white" fill-opacity="0.96"/>
-  <path d="M72 168V88H92L128 133L164 88H184V168H162V122L132 161H124L94 122V168H72Z" fill="url(#fg)"/>
+  <rect x="34" y="34" width="188" height="188" rx="48" fill="url(#panel)" fill-opacity="0.2"/>
+  <g filter="url(#shadow)">
+    <rect x="58" y="72" width="140" height="112" rx="28" transform="rotate(-8 58 72)" fill="url(#card)"/>
+    <rect x="80" y="103" width="68" height="12" rx="6" transform="rotate(-8 80 103)" fill="#E0F2FE"/>
+    <rect x="80" y="126" width="92" height="12" rx="6" transform="rotate(-8 80 126)" fill="#BFDBFE"/>
+    <rect x="80" y="149" width="56" height="12" rx="6" transform="rotate(-8 80 149)" fill="#DBEAFE"/>
+  </g>
+  <path d="M156 58C156 44.7452 166.745 34 180 34C193.255 34 204 44.7452 204 58C204 67.3468 198.655 75.4449 190.858 79.3901C189.31 80.1737 188.182 81.6262 188.182 83.361V86H171.818V83.361C171.818 81.6262 170.69 80.1737 169.142 79.3901C161.345 75.4449 156 67.3468 156 58Z" fill="url(#idea)"/>
+  <rect x="171" y="89" width="18" height="8" rx="4" fill="#F8FAFC"/>
+  <rect x="168" y="99" width="24" height="8" rx="4" fill="#E2E8F0"/>
+  <path d="M180 22V30" stroke="#FDE68A" stroke-width="8" stroke-linecap="round"/>
+  <path d="M148 36L154 42" stroke="#FDE68A" stroke-width="8" stroke-linecap="round"/>
+  <path d="M206 36L200 42" stroke="#FDE68A" stroke-width="8" stroke-linecap="round"/>
+  <path d="M214 58H206" stroke="#FDE68A" stroke-width="8" stroke-linecap="round"/>
   <defs>
-    <linearGradient id="bg" x1="24" y1="20" x2="228" y2="236" gradientUnits="userSpaceOnUse">
+    <linearGradient id="bg" x1="24" y1="18" x2="226" y2="238" gradientUnits="userSpaceOnUse">
       <stop stop-color="#0F172A"/>
-      <stop offset="1" stop-color="#7C3AED"/>
+      <stop offset="0.48" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#22C55E"/>
     </linearGradient>
-    <linearGradient id="fg" x1="72" y1="88" x2="184" y2="168" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0F172A"/>
-      <stop offset="1" stop-color="#7C3AED"/>
+    <linearGradient id="panel" x1="52" y1="48" x2="206" y2="212" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#BAE6FD"/>
     </linearGradient>
+    <linearGradient id="card" x1="58" y1="72" x2="198" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#DBEAFE"/>
+    </linearGradient>
+    <linearGradient id="idea" x1="156" y1="34" x2="204" y2="97" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDE68A"/>
+      <stop offset="1" stop-color="#FB7185"/>
+    </linearGradient>
+    <filter id="shadow" x="36" y="52" width="184" height="160" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="10"/>
+      <feGaussianBlur stdDeviation="10"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.0588235 0 0 0 0 0.0901961 0 0 0 0 0.164706 0 0 0 0.22 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_1" result="shape"/>
+    </filter>
   </defs>
 </svg>

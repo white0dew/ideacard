@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MD2Card",
-  description: "Markdown to card image workbench built with Next.js.",
+  title: "ideaCard",
+  description: "Turn ideas and Markdown into shareable card images.",
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",

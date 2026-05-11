@@ -19,8 +19,8 @@ export default function TopBar({
   return (
     <header className="sticky top-0 z-30 flex min-h-[72px] flex-col justify-between gap-3 border-b border-slate-200 bg-white/90 px-6 py-4 backdrop-blur md:h-[72px] md:flex-row md:items-center md:py-0">
       <div>
-        <p className="text-xl font-semibold tracking-tight text-slate-900">MD2Card</p>
-        <p className="text-sm text-slate-500">Markdown 转卡片工作台</p>
+        <p className="text-xl font-semibold tracking-tight text-slate-900">ideaCard</p>
+        <p className="text-sm text-slate-500">把想法变成卡片</p>
       </div>
       <div className="flex items-center gap-3">
         <p aria-live="polite" className="min-h-[20px] text-sm text-slate-500" role="status">

@@ -51,7 +51,7 @@ export default function Workbench() {
       const exportTargets = pageNodes.length > 0 ? pageNodes : [preview];
       const exportPlan = buildExportPlan({
         cardCount: exportTargets.length,
-        fileName: "md2card.png",
+        fileName: "ideaCard.png",
         preset: selectedPreset,
         renderedHeight: exportTargets[0].offsetHeight,
         renderedWidth: exportTargets[0].offsetWidth,
@@ -69,7 +69,7 @@ export default function Workbench() {
 
       if (blobs.length > 1) {
         const archiveBlob = await createArchiveBlob(blobs);
-        downloadBlob(archiveBlob, buildArchiveName("md2card.png"));
+        downloadBlob(archiveBlob, buildArchiveName("ideaCard.png"));
       } else if (blobs.length === 1) {
         downloadBlob(blobs[0].blob, blobs[0].fileName);
       }

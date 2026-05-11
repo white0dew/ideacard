@@ -1,6 +1,8 @@
-# MD2Card
+# ideaCard
 
-MD2Card 是一个 Markdown 转卡片图片的工作台应用，当前已迁移到 Next.js App Router。
+ideaCard is a Markdown-to-card-image workbench built on the Next.js App Router.
+
+Turn ideas and Markdown into shareable card images.
 
 ## 功能特性
 

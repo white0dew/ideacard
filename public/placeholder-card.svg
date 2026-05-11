@@ -9,6 +9,6 @@
   <rect x="112" y="332" width="976" height="24" rx="12" fill="#CBD5E1" />
   <rect x="112" y="392" width="920" height="24" rx="12" fill="#CBD5E1" />
   <rect x="112" y="452" width="744" height="24" rx="12" fill="#CBD5E1" />
-  <text x="112" y="108" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="38" font-weight="700">MD2Card Placeholder</text>
-  <text x="112" y="540" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="28">Local preview asset for stable export and testing.</text>
+  <text x="112" y="108" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="38" font-weight="700">ideaCard Placeholder</text>
+  <text x="112" y="540" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="28">Local ideaCard preview asset for stable export and testing.</text>
 </svg>
