@@ -2,7 +2,16 @@
 
 import { loader as monacoLoader } from "@monaco-editor/react";
 import dynamic from "next/dynamic";
-import { useEffect, useEffectEvent, useMemo, useRef, useState, type JSX } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type ClipboardEvent,
+  type JSX,
+} from "react";
 import {
   FiAlignLeft,
   FiBold,
@@ -21,6 +30,10 @@ import {
   type AlignmentOption,
   type FormatAction,
 } from "@/lib/editor-format";
+import {
+  buildLocalImageMarkdown,
+  saveLocalImage,
+} from "@/lib/local-images";
 import { configureMonacoLoader } from "@/lib/monaco-loader";
 import usePersistHydration from "@/hooks/use-persist-hydration";
 import useEditorStore from "@/stores/editor-store";
@@ -31,6 +44,15 @@ const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
 });
 const persistDelayMs = 180;
+const localImageAccept = "image/png,image/jpeg,image/webp,image/gif,image/svg+xml";
+
+type EditorInstance = {
+  executeEdits: (source: string, edits: { range: unknown; text: string }[]) => void;
+  focus: () => void;
+  getModel: () => { getValueInRange: (range: unknown) => string } | null;
+  getSelection: () => unknown;
+  pushUndoStop: () => void;
+};
 
 const toolbarGroups: {
   id: FormatAction;
@@ -61,23 +83,29 @@ const alignmentLabels: Record<AlignmentOption, string> = {
   right: "右对齐",
 };
 
+function getImageAltText(fileName: string, selectedText: string) {
+  const normalizedSelection = selectedText.trim().replace(/[\r\n\]]+/g, " ");
+  if (normalizedSelection) {
+    return normalizedSelection;
+  }
+
+  const normalizedFileName = fileName.trim().replace(/\.[^.]+$/, "").replace(/[\r\n\]]+/g, " ");
+  return normalizedFileName || "图片";
+}
+
 export default function EditorPane() {
   const content = useEditorStore((state) => state.content);
   const setContent = useEditorStore((state) => state.setContent);
   const editorReady = usePersistHydration(useEditorStore);
   const [draftContent, setDraftContent] = useState("");
+  const [imageMessage, setImageMessage] = useState<string | null>(null);
   const [isAlignmentMenuOpen, setAlignmentMenuOpen] = useState(false);
   const draftContentRef = useRef(content);
   const persistedContentRef = useRef(content);
   const persistTimerRef = useRef<number | null>(null);
-  const editorRef = useRef<{
-    getSelection: () => unknown;
-    getModel: () => { getValueInRange: (range: unknown) => string } | null;
-    executeEdits: (
-      source: string,
-      edits: { range: unknown; text: string }[],
-    ) => void;
-  } | null>(null);
+  const imageUploadId = useId();
+  const imageUploadRef = useRef<HTMLInputElement | null>(null);
+  const editorRef = useRef<EditorInstance | null>(null);
 
   const clearPersistTimer = () => {
     if (persistTimerRef.current === null) {
@@ -149,7 +177,51 @@ export default function EditorPane() {
     };
   }, [editorReady, flushDraftContent]);
 
-  const applyAction = (action: FormatAction) => {
+  const insertLocalImage = async (file: File) => {
+    const editor = editorRef.current;
+    if (!editor) {
+      return;
+    }
+
+    const selection = editor.getSelection();
+    if (!selection) {
+      setImageMessage("请先把光标放到编辑器里，再插入图片。");
+      return;
+    }
+
+    try {
+      const selectedText = editor.getModel()?.getValueInRange(selection) || "";
+      const { altText, id } = await saveLocalImage(file);
+      const markdown = buildLocalImageMarkdown(id, getImageAltText(file.name || altText, selectedText));
+
+      editor.executeEdits("local-image-insert", [{ range: selection, text: markdown }]);
+      editor.pushUndoStop();
+      editor.focus();
+      setImageMessage(`已插入本地图片：${altText}`);
+    } catch (error) {
+      setImageMessage(error instanceof Error ? error.message : "插入图片失败，请稍后重试。");
+    }
+  };
+
+  const handleImageFile = async (file: File | null | undefined) => {
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setImageMessage("仅支持图片文件，请重新选择。");
+      return;
+    }
+
+    await insertLocalImage(file);
+  };
+
+  const handleToolbarAction = (action: FormatAction) => {
+    if (action === "image") {
+      imageUploadRef.current?.click();
+      return;
+    }
+
     const editor = editorRef.current;
     if (!editor) {
       return;
@@ -165,12 +237,24 @@ export default function EditorPane() {
 
     editor.executeEdits("markdown-format", [{ range: selection, text: nextText }]);
     setAlignmentMenuOpen(false);
+    setImageMessage(null);
+  };
+
+  const handlePasteCapture = async (event: ClipboardEvent<HTMLDivElement>) => {
+    const imageItem = Array.from(event.clipboardData?.items ?? []).find(
+      (item) => item.kind === "file" && item.type.startsWith("image/"),
+    );
+    const file = imageItem?.getAsFile();
+    if (!file) {
+      return;
+    }
+
+    event.preventDefault();
+    await insertLocalImage(file);
   };
 
   return (
-    <section
-      className="flex h-full min-h-[720px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.08)] xl:h-full xl:min-h-0"
-    >
+    <section className="flex h-full min-h-[720px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.08)] xl:h-full xl:min-h-0">
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50/80 p-3">
         {toolbarGroups.map((group, groupIndex) => (
           <div
@@ -182,7 +266,7 @@ export default function EditorPane() {
                 key={action.id}
                 aria-label={action.label}
                 className="rounded-lg p-2 text-slate-600 transition hover:bg-white hover:text-slate-900"
-                onClick={() => applyAction(action.id)}
+                onClick={() => handleToolbarAction(action.id)}
                 onMouseDown={(event) => event.preventDefault()}
                 title={action.label}
                 type="button"
@@ -218,7 +302,7 @@ export default function EditorPane() {
                 <button
                   key={action.id}
                   className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-                  onClick={() => applyAction(action.id)}
+                  onClick={() => handleToolbarAction(action.id)}
                   onMouseDown={(event) => event.preventDefault()}
                   role="menuitem"
                   type="button"
@@ -229,8 +313,22 @@ export default function EditorPane() {
             </div>
           ) : null}
         </div>
+
+        <input
+          accept={localImageAccept}
+          className="sr-only"
+          id={imageUploadId}
+          onChange={async (event) => {
+            await handleImageFile(event.target.files?.[0]);
+            event.target.value = "";
+          }}
+          ref={imageUploadRef}
+          type="file"
+        />
+
+        {imageMessage ? <p className="text-xs text-slate-500">{imageMessage}</p> : null}
       </div>
-      <div className="min-h-[520px] flex-1 overflow-hidden xl:min-h-0">
+      <div className="min-h-[520px] flex-1 overflow-hidden xl:min-h-0" onPasteCapture={handlePasteCapture}>
         {editorReady ? (
           <MonacoEditor
             className="h-full"
@@ -242,14 +340,7 @@ export default function EditorPane() {
               setDraftContent(nextContent);
             }}
             onMount={(editor) => {
-              editorRef.current = editor as unknown as {
-                getSelection: () => unknown;
-                getModel: () => { getValueInRange: (range: unknown) => string } | null;
-                executeEdits: (
-                  source: string,
-                  edits: { range: unknown; text: string }[],
-                ) => void;
-              };
+              editorRef.current = editor as unknown as EditorInstance;
             }}
             options={{
               automaticLayout: true,

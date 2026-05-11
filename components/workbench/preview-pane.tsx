@@ -1,11 +1,13 @@
 "use client";
 
-import { startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import usePersistHydration from "@/hooks/use-persist-hydration";
-import { cardComponents } from "@/lib/card-registry";
+import { cardComponents, defaultThemeName } from "@/lib/card-registry";
+import { resolveLocalImageMarkdown } from "@/lib/local-images";
 import LongMarkdownViewer from "@/lib/long-markdown-viewer";
 import { parseMarkdown } from "@/lib/markdown";
 import PaginatedMarkdownViewer from "@/lib/paginated-markdown-viewer";
+import { resolveThemeName } from "@/lib/theme-selection";
 import useEditorStore from "@/stores/editor-store";
 import useSettingsStore from "@/stores/settings-store";
 
@@ -21,13 +23,20 @@ export default function PreviewPane() {
   const previewReady = editorHydrated && settingsHydrated;
   const deferredContent = useDeferredValue(previewReady ? content : "");
   const [html, setHtml] = useState("");
+  const localImageCleanupRef = useRef<() => void>(() => undefined);
+  const resolvedThemeName = useMemo(() => resolveThemeName(selectedTheme), [selectedTheme]);
 
   const selectedCard = useMemo(
-    () => cardComponents[selectedTheme] ?? cardComponents["默认"],
-    [selectedTheme],
+    () => cardComponents[resolvedThemeName] ?? cardComponents[defaultThemeName],
+    [resolvedThemeName],
   );
 
+  useEffect(() => () => localImageCleanupRef.current(), []);
+
   useEffect(() => {
+    localImageCleanupRef.current();
+    localImageCleanupRef.current = () => undefined;
+
     if (!previewReady) {
       setHtml("");
       return undefined;
@@ -40,16 +49,34 @@ export default function PreviewPane() {
 
     let cancelled = false;
 
-    parseMarkdown(deferredContent, selectedCard.renderer).then((parsedHtml) => {
-      if (!cancelled) {
-        startTransition(() => {
-          setHtml(parsedHtml);
-        });
+    const renderPreview = async () => {
+      const { markdown: resolvedMarkdown, revoke } = await resolveLocalImageMarkdown(deferredContent);
+      localImageCleanupRef.current = revoke;
+
+      if (cancelled) {
+        localImageCleanupRef.current();
+        localImageCleanupRef.current = () => undefined;
+        return;
       }
-    });
+
+      const parsedHtml = await parseMarkdown(resolvedMarkdown, selectedCard.renderer);
+      if (cancelled) {
+        localImageCleanupRef.current();
+        localImageCleanupRef.current = () => undefined;
+        return;
+      }
+
+      startTransition(() => {
+        setHtml(parsedHtml);
+      });
+    };
+
+    void renderPreview();
 
     return () => {
       cancelled = true;
+      localImageCleanupRef.current();
+      localImageCleanupRef.current = () => undefined;
     };
   }, [deferredContent, previewReady, selectedCard]);
 

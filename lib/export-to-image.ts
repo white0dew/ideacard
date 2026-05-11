@@ -3,6 +3,10 @@ interface ExportOptions {
   canvasHeight?: number;
 }
 
+function shouldCacheBustImages(element: HTMLElement) {
+  return !element.querySelector('img[src^="blob:"]');
+}
+
 export async function renderElementToPngBlob(
   element: HTMLElement,
   options: ExportOptions = {},
@@ -22,7 +26,7 @@ export async function renderElementToPngBlob(
   const blob = await htmlToImage.toBlob(element, {
     canvasWidth: options.canvasWidth,
     canvasHeight: options.canvasHeight,
-    cacheBust: true,
+    cacheBust: shouldCacheBustImages(element),
     imagePlaceholder: fallbackImage,
     pixelRatio: 2,
   });

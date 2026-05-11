@@ -1,15 +1,11 @@
 import type { CardConfig } from "@/lib/card-types";
-import defaultCard from "@/components/cards/DefaultCard";
 import editorialCard from "@/components/cards/EditorialCard";
 import socialNoteCard from "@/components/cards/SocialNoteCard";
 import terminalCard from "@/components/cards/TerminalCard";
 
-const configs = [
-  defaultCard,
-  socialNoteCard,
-  editorialCard,
-  terminalCard,
-];
+export { defaultThemeName } from "@/lib/theme-selection";
+
+const configs = [socialNoteCard, editorialCard, terminalCard];
 
 export const cardComponents = configs.reduce<Record<string, CardConfig>>(
   (accumulator, config) => {

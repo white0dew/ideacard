@@ -25,6 +25,7 @@ import {
   inferSocialUseAutoTimeLabel,
   resolveSocialProfile,
 } from "@/lib/social-profile";
+import { defaultThemeName, resolveThemeName } from "@/lib/theme-selection";
 
 export const viewModes = ["长卡片", "短卡片"] as const;
 export type ViewMode = (typeof viewModes)[number];
@@ -112,7 +113,7 @@ function createDefaultSettingsState() {
     selectedPreset: defaultPresetId,
     viewMode: "短卡片" as ViewMode,
     hideOverflow: false,
-    selectedTheme: "默认",
+    selectedTheme: defaultThemeName,
     socialProfileName: defaultSocialState.name,
     socialProfileTimeLabel: defaultSocialState.timeLabel,
     socialUseAutoTimeLabel: true,
@@ -188,7 +189,7 @@ const useSettingsStore = create<SettingsState>()(
         },
         setViewMode: (viewMode) => set({ viewMode }),
         setHideOverflow: (hideOverflow) => set({ hideOverflow }),
-        setSelectedTheme: (selectedTheme) => set({ selectedTheme }),
+        setSelectedTheme: (selectedTheme) => set({ selectedTheme: resolveThemeName(selectedTheme) }),
         setSocialProfileName: (socialProfileName) => set({ socialProfileName }),
         setSocialProfileTimeLabel: (socialProfileTimeLabel) =>
           set({ socialProfileTimeLabel }),
@@ -230,7 +231,7 @@ const useSettingsStore = create<SettingsState>()(
     },
     {
       name: "settings-storage",
-      version: 9,
+      version: 10,
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (_state, error) => {
         if (!error) {
@@ -278,6 +279,7 @@ const useSettingsStore = create<SettingsState>()(
           cardHeight: shouldUpgradeLegacyShortCard ? defaultHeight : height,
           selectedPreset: shouldUpgradeLegacyShortCard ? defaultPresetId : nextPreset,
           viewMode: state.viewMode ?? "短卡片",
+          selectedTheme: resolveThemeName(state.selectedTheme),
           socialProfileName: socialProfile.name,
           socialProfileTimeLabel: state.socialProfileTimeLabel ?? socialProfile.timeLabel,
           socialUseAutoTimeLabel,

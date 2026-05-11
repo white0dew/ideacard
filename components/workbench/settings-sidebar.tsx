@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 import { configNames } from "@/lib/card-registry";
 import { designPresets, type DesignPresetId } from "@/lib/design-presets";
+import { resolveThemeName } from "@/lib/theme-selection";
 import ColorPalettePicker from "@/components/workbench/color-palette-picker";
 import {
   socialNoteAccentColors,
@@ -71,6 +72,7 @@ export default function SettingsSidebar() {
   const presetMeta = designPresets[selectedPreset];
   const avatarUploadId = useId();
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const resolvedSelectedTheme = resolveThemeName(selectedTheme);
   const displayedSocialTimeLabel = socialUseAutoTimeLabel
     ? getDefaultSocialProfileTimeLabel()
     : socialProfileTimeLabel;
@@ -239,7 +241,7 @@ export default function SettingsSidebar() {
             className="w-full rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-700"
             id="theme-select"
             onChange={(event) => setSelectedTheme(event.target.value)}
-            value={selectedTheme}
+            value={resolvedSelectedTheme}
           >
             {configNames.map((themeName) => (
               <option key={themeName} value={themeName}>
@@ -249,7 +251,7 @@ export default function SettingsSidebar() {
           </select>
         </div>
 
-        {selectedTheme === "社交图文" ? (
+        {resolvedSelectedTheme === "社交图文" ? (
           <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
             <div>
               <p className="text-sm font-medium text-slate-700">社交资料</p>

@@ -17,10 +17,11 @@ test("card registry exposes the supported theme cards only", async () => {
     "utf8",
   );
 
-  assert.match(registryText, /defaultCard/);
+  assert.doesNotMatch(registryText, /defaultCard/);
   assert.match(registryText, /socialNoteCard/);
   assert.match(registryText, /editorialCard/);
   assert.match(registryText, /terminalCard/);
+  assert.match(registryText, /defaultThemeName/);
   assert.doesNotMatch(registryText, /glassCard/);
   assert.doesNotMatch(registryText, /warmCard/);
   assert.match(socialCardText, /社交图文/);
