@@ -16,7 +16,7 @@ test("settings store persists the new default theme and migrates old theme names
 
   assert.match(source, /selectedTheme: defaultThemeName/);
   assert.match(source, /resolveThemeName\(state\.selectedTheme\)/);
-  assert.match(source, /version: 10/);
+  assert.match(source, /version:\s*11/);
 });
 
 test("settings sidebar renders only the resolved supported theme list", async () => {

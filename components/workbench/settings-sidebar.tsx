@@ -1,7 +1,13 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { configNames } from "@/lib/card-registry";
+import {
+  MIN_CARD_HEIGHT,
+  MIN_CARD_WIDTH,
+  clampCardHeight,
+  clampCardWidth,
+} from "@/lib/card-dimensions";
 import { designPresets, type DesignPresetId } from "@/lib/design-presets";
 import { resolveThemeName } from "@/lib/theme-selection";
 import ColorPalettePicker from "@/components/workbench/color-palette-picker";
@@ -72,11 +78,51 @@ export default function SettingsSidebar() {
   const presetMeta = designPresets[selectedPreset];
   const avatarUploadId = useId();
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [widthInput, setWidthInput] = useState(() => String(cardWidth));
+  const [heightInput, setHeightInput] = useState(() => String(cardHeight));
   const resolvedSelectedTheme = resolveThemeName(selectedTheme);
   const displayedSocialTimeLabel = socialUseAutoTimeLabel
     ? getDefaultSocialProfileTimeLabel()
     : socialProfileTimeLabel;
   const socialFontScaleLabel = `${socialFontScale.toFixed(2)}x`;
+
+  useEffect(() => {
+    setWidthInput(String(cardWidth));
+  }, [cardWidth]);
+
+  useEffect(() => {
+    setHeightInput(String(cardHeight));
+  }, [cardHeight]);
+
+  const commitWidthInput = () => {
+    const value = Number.parseInt(widthInput, 10);
+    if (Number.isNaN(value)) {
+      setWidthInput(String(cardWidth));
+      return;
+    }
+
+    const nextWidth = clampCardWidth(value);
+    setCardWidth(nextWidth);
+    setWidthInput(String(nextWidth));
+  };
+
+  const commitHeightInput = () => {
+    const value = Number.parseInt(heightInput, 10);
+    if (Number.isNaN(value)) {
+      setHeightInput(String(cardHeight));
+      return;
+    }
+
+    const nextHeight = clampCardHeight(value);
+    setCardHeight(nextHeight);
+    setHeightInput(String(nextHeight));
+  };
+
+  const handleDimensionKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.currentTarget.blur();
+    }
+  };
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -149,7 +195,9 @@ export default function SettingsSidebar() {
         <div className="space-y-4">
           <div>
             <h4 className="text-sm font-medium text-slate-700">尺寸</h4>
-            <p className="mt-1 text-xs text-slate-500">预设尺寸会在你修改宽度时自动同步高度。</p>
+            <p className="mt-1 text-xs text-slate-500">
+              预设尺寸会在你修改宽度时自动同步高度。为避免实时预览失控，宽度最低 {MIN_CARD_WIDTH}px，高度最低 {MIN_CARD_HEIGHT}px。
+            </p>
           </div>
 
           <div>
@@ -182,14 +230,12 @@ export default function SettingsSidebar() {
                 <input
                   aria-label="卡片宽度"
                   className="w-20 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-sm text-slate-700"
-                  onChange={(event) => {
-                    const value = Number.parseInt(event.target.value, 10);
-                    if (!Number.isNaN(value) && value > 0) {
-                      setCardWidth(value);
-                    }
-                  }}
+                  min={MIN_CARD_WIDTH}
+                  onBlur={commitWidthInput}
+                  onChange={(event) => setWidthInput(event.target.value)}
+                  onKeyDown={handleDimensionKeyDown}
                   type="number"
-                  value={cardWidth}
+                  value={widthInput}
                 />
                 <span>px</span>
               </div>
@@ -201,14 +247,12 @@ export default function SettingsSidebar() {
                   aria-label="卡片高度"
                   className="w-20 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-sm text-slate-700 disabled:cursor-not-allowed disabled:bg-slate-100"
                   disabled={viewMode === "长卡片"}
-                  onChange={(event) => {
-                    const value = Number.parseInt(event.target.value, 10);
-                    if (!Number.isNaN(value) && value > 0) {
-                      setCardHeight(value);
-                    }
-                  }}
+                  min={MIN_CARD_HEIGHT}
+                  onBlur={commitHeightInput}
+                  onChange={(event) => setHeightInput(event.target.value)}
+                  onKeyDown={handleDimensionKeyDown}
                   type="number"
-                  value={cardHeight}
+                  value={heightInput}
                 />
                 <span>px</span>
               </div>

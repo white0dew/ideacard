@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { clampCardHeight, clampCardWidth } from "@/lib/card-dimensions";
 import {
   calculatePresetHeight,
   defaultCanvasSize,
@@ -109,7 +110,7 @@ function resolveSocialFontScale(scale: unknown) {
 function createDefaultSettingsState() {
   return {
     cardWidth: defaultWidth,
-    cardHeight: defaultHeight,
+    cardHeight: clampCardHeight(defaultHeight),
     selectedPreset: defaultPresetId,
     viewMode: "短卡片" as ViewMode,
     hideOverflow: false,
@@ -154,42 +155,52 @@ const useSettingsStore = create<SettingsState>()(
       return {
         ...createDefaultSettingsState(),
         setCardWidth: (cardWidth) => {
+          const nextWidth = clampCardWidth(cardWidth);
           const { selectedPreset } = get();
 
           if (selectedPreset !== "custom") {
+            const nextHeight = clampCardHeight(
+              calculatePresetHeight(nextWidth, selectedPreset),
+            );
             set({
-              cardWidth,
-              cardHeight: calculatePresetHeight(cardWidth, selectedPreset),
+              cardWidth: nextWidth,
+              cardHeight: nextHeight,
             });
             return;
           }
 
-          set({ cardWidth });
+          set({ cardWidth: nextWidth });
         },
         setCardHeight: (cardHeight) => {
-          const { cardWidth } = get();
+          const nextHeight = clampCardHeight(cardHeight);
+          const nextWidth = clampCardWidth(get().cardWidth);
 
           set({
-            cardHeight,
-            selectedPreset: inferPreset(cardWidth, cardHeight),
+            cardWidth: nextWidth,
+            cardHeight: nextHeight,
+            selectedPreset: inferPreset(nextWidth, nextHeight),
           });
         },
         setSelectedPreset: (selectedPreset) => {
-          const { cardWidth } = get();
+          const nextWidth = clampCardWidth(get().cardWidth);
 
           if (selectedPreset === "custom") {
-            set({ selectedPreset });
+            set({ cardWidth: nextWidth, selectedPreset });
             return;
           }
 
           set({
+            cardWidth: nextWidth,
             selectedPreset,
-            cardHeight: calculatePresetHeight(cardWidth, selectedPreset),
+            cardHeight: clampCardHeight(
+              calculatePresetHeight(nextWidth, selectedPreset),
+            ),
           });
         },
         setViewMode: (viewMode) => set({ viewMode }),
         setHideOverflow: (hideOverflow) => set({ hideOverflow }),
-        setSelectedTheme: (selectedTheme) => set({ selectedTheme: resolveThemeName(selectedTheme) }),
+        setSelectedTheme: (selectedTheme) =>
+          set({ selectedTheme: resolveThemeName(selectedTheme) }),
         setSocialProfileName: (socialProfileName) => set({ socialProfileName }),
         setSocialProfileTimeLabel: (socialProfileTimeLabel) =>
           set({ socialProfileTimeLabel }),
@@ -231,7 +242,7 @@ const useSettingsStore = create<SettingsState>()(
     },
     {
       name: "settings-storage",
-      version: 10,
+      version: 11,
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (_state, error) => {
         if (!error) {
@@ -248,15 +259,19 @@ const useSettingsStore = create<SettingsState>()(
           return createDefaultSettingsState();
         }
 
-        const nextPreset =
-          state.selectedPreset ??
-          inferPreset(state.cardWidth ?? defaultWidth, state.cardHeight ?? defaultHeight);
-
-        const width = state.cardWidth ?? defaultWidth;
-        const height = state.cardHeight ?? defaultHeight;
+        const width = clampCardWidth(state.cardWidth ?? defaultWidth);
+        const rawHeight = clampCardHeight(state.cardHeight ?? defaultHeight);
+        const inferredPreset = inferPreset(width, rawHeight);
+        const nextPreset = state.selectedPreset ?? inferredPreset;
 
         const shouldUpgradeLegacyShortCard =
-          nextPreset === "custom" && width === 440 && height === 586;
+          nextPreset === "custom" && width === 440 && rawHeight === 586;
+        const resolvedWidth = shouldUpgradeLegacyShortCard ? defaultWidth : width;
+        const resolvedPreset = shouldUpgradeLegacyShortCard ? defaultPresetId : nextPreset;
+        const resolvedHeight =
+          resolvedPreset === "custom"
+            ? (shouldUpgradeLegacyShortCard ? clampCardHeight(defaultHeight) : rawHeight)
+            : clampCardHeight(calculatePresetHeight(resolvedWidth, resolvedPreset));
         const socialUseAutoTimeLabel =
           state.socialUseAutoTimeLabel ?? inferSocialUseAutoTimeLabel(state.socialProfileTimeLabel);
         const socialProfile = resolveSocialProfile({
@@ -275,9 +290,9 @@ const useSettingsStore = create<SettingsState>()(
 
         return {
           ...state,
-          cardWidth: shouldUpgradeLegacyShortCard ? defaultWidth : width,
-          cardHeight: shouldUpgradeLegacyShortCard ? defaultHeight : height,
-          selectedPreset: shouldUpgradeLegacyShortCard ? defaultPresetId : nextPreset,
+          cardWidth: resolvedWidth,
+          cardHeight: resolvedHeight,
+          selectedPreset: resolvedPreset,
           viewMode: state.viewMode ?? "短卡片",
           selectedTheme: resolveThemeName(state.selectedTheme),
           socialProfileName: socialProfile.name,
