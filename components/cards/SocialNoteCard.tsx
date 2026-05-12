@@ -32,6 +32,7 @@ const BASE_H4_FONT_SIZE = 18;
 const BASE_H5_FONT_SIZE = 17;
 const BASE_TABLE_FONT_SIZE = 15;
 const BASE_PRE_FONT_SIZE = 14;
+const SOCIAL_NOTE_IMAGE_MAX_HEIGHT_RATIO = 0.38;
 
 function toPx(size: number) {
   return `${size}px`;
@@ -250,10 +251,12 @@ const CardContainer = styled.article`
 
   .md-image {
     display: block;
-    width: 100%;
-    margin: 12px 0;
+    max-width: 100%;
+    height: auto;
+    max-height: var(--social-image-max-height, 223px);
+    margin: 12px auto;
     border-radius: 14px;
-    object-fit: cover;
+    object-fit: contain;
   }
 
   .md-table {
@@ -365,6 +368,10 @@ const Card: FC<CardProps> = ({
     },
   );
   const allFontScale = socialFontScaleMode === "all" ? socialFontScale : DEFAULT_FONT_SCALE;
+  const imageMaxHeight =
+    typeof settingHeight === "number" && settingHeight > 0
+      ? toPx(Math.round(settingHeight * SOCIAL_NOTE_IMAGE_MAX_HEIGHT_RATIO))
+      : "38vh";
   const cardStyle = {
     width,
     height,
@@ -373,6 +380,7 @@ const Card: FC<CardProps> = ({
     ["--social-font-family" as string]: getSocialNoteFontFamily(socialFontPreset),
     ["--social-font-scale" as string]: String(socialFontScale),
     ["--social-all-font-scale" as string]: String(allFontScale),
+    ["--social-image-max-height" as string]: imageMaxHeight,
     ["--social-body-font-size" as string]:
       socialFontScaleMode === "body"
         ? toBodyScaledFontSize(BASE_BODY_FONT_SIZE)

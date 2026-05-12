@@ -187,6 +187,28 @@ test("social-note theme reads font scale settings and outputs scale variables", 
   assert.match(cardText, /calc\(/);
 });
 
+test("social-note theme caps markdown image height with the shared ratio variable", async () => {
+  const cardText = await readFile(
+    new URL("../components/cards/SocialNoteCard.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(cardText, /const\s+SOCIAL_NOTE_IMAGE_MAX_HEIGHT_RATIO\s*=\s*0\.38/);
+  assert.match(cardText, /settingHeight\s*\*\s*SOCIAL_NOTE_IMAGE_MAX_HEIGHT_RATIO/);
+  assert.match(cardText, /--social-image-max-height/);
+});
+
+test("social-note theme renders markdown images with contain fit and css max-height variable", async () => {
+  const cardText = await readFile(
+    new URL("../components/cards/SocialNoteCard.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(cardText, /\.md-image\s*\{/);
+  assert.match(cardText, /max-height:\s*var\(--social-image-max-height,\s*223px\)/);
+  assert.match(cardText, /object-fit:\s*contain/);
+});
+
 test("social-note only extracts h1 as lead title on the first page", () => {
   const page = '<p>前文</p><h1 class="md-h1">124大大</h1><p>后文</p>';
 

@@ -53,6 +53,15 @@ test("editor pane wires paste and upload actions into local image storage", asyn
   assert.match(source, /local-image-insert/);
 });
 
+test("local image storage preprocesses uploaded files before persistence", async () => {
+  const source = await readFile(new URL("../lib/local-images.ts", import.meta.url), "utf8");
+
+  assert.match(source, /prepareLocalImageForStorage/);
+  assert.match(source, /const storedFile = await prepareLocalImageForStorage\(file\)/);
+  assert.match(source, /blob:\s*storedFile/);
+  assert.match(source, /mimeType:\s*storedFile\.type/);
+});
+
 test("preview pane resolves local-image markdown before rendering cards", async () => {
   const source = await readFile(new URL("../components/workbench/preview-pane.tsx", import.meta.url), "utf8");
 

@@ -1,3 +1,5 @@
+import { prepareLocalImageForStorage } from "@/lib/local-image-processing";
+
 export const LOCAL_IMAGE_SCHEME = "local-image://";
 export const LOCAL_IMAGE_STORE_LIMIT_BYTES = 100 * 1024 * 1024;
 export const LOCAL_IMAGE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -130,17 +132,18 @@ export async function saveLocalImage(file: File) {
     throw new Error("当前浏览器不支持 IndexedDB，无法保存本地图片。");
   }
 
+  const storedFile = await prepareLocalImageForStorage(file);
   const database = await openDatabase();
   const now = Date.now();
   const record: LocalImageRecord = {
     id: createImageId(),
-    blob: file,
+    blob: storedFile,
     createdAt: now,
     expiresAt: toExpiryTimestamp(now),
     lastAccessedAt: now,
-    mimeType: file.type || "application/octet-stream",
-    name: file.name || FALLBACK_ALT_TEXT,
-    size: file.size,
+    mimeType: storedFile.type || "application/octet-stream",
+    name: storedFile.name || FALLBACK_ALT_TEXT,
+    size: storedFile.size,
   };
 
   try {
