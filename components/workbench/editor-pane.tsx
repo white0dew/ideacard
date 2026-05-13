@@ -21,7 +21,6 @@ import {
   FiItalic,
   FiLink2,
   FiList,
-  FiPlus,
   FiUnderline,
 } from "react-icons/fi";
 import { TbH1, TbH2, TbH3 } from "react-icons/tb";
@@ -77,7 +76,11 @@ const toolbarGroups: {
   ],
   [
     { id: "list", label: "无序列表", icon: <FiList className="h-4 w-4" /> },
-    { id: "blankLine", label: "插入空行", icon: <FiPlus className="h-4 w-4" /> },
+    {
+      id: "blankLine",
+      label: "插入空行",
+      icon: <span className="px-1 text-sm font-medium">空行</span>,
+    },
   ],
 ];
 
