@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { configNames } from "@/lib/card-registry";
 import {
+  MAX_CARD_WIDTH,
   MIN_CARD_HEIGHT,
   MIN_CARD_WIDTH,
   clampCardHeight,
@@ -196,7 +197,7 @@ export default function SettingsSidebar() {
           <div>
             <h4 className="text-sm font-medium text-slate-700">尺寸</h4>
             <p className="mt-1 text-xs text-slate-500">
-              预设尺寸会在你修改宽度时自动同步高度。为避免实时预览失控，宽度最低 {MIN_CARD_WIDTH}px，高度最低 {MIN_CARD_HEIGHT}px。
+              预设尺寸会在你修改宽度时自动同步高度。为避免实时预览失控，宽度范围 {MIN_CARD_WIDTH}-{MAX_CARD_WIDTH}px，高度最低 {MIN_CARD_HEIGHT}px。
             </p>
           </div>
 
@@ -230,6 +231,7 @@ export default function SettingsSidebar() {
                 <input
                   aria-label="卡片宽度"
                   className="w-20 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-sm text-slate-700"
+                  max={MAX_CARD_WIDTH}
                   min={MIN_CARD_WIDTH}
                   onBlur={commitWidthInput}
                   onChange={(event) => setWidthInput(event.target.value)}

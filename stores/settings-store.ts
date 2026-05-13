@@ -242,7 +242,7 @@ const useSettingsStore = create<SettingsState>()(
     },
     {
       name: "settings-storage",
-      version: 11,
+      version: 12,
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (_state, error) => {
         if (!error) {
