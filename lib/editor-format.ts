@@ -12,6 +12,7 @@ export type FormatAction =
   | "image"
   | "code"
   | "list"
+  | "blankLine"
   | `align-${AlignmentOption}`;
 
 const placeholders: Record<Exclude<FormatAction, `align-${AlignmentOption}`>, string> = {
@@ -25,6 +26,7 @@ const placeholders: Record<Exclude<FormatAction, `align-${AlignmentOption}`>, st
   image: "图片描述",
   code: "代码",
   list: "列表项",
+  blankLine: "",
 };
 
 function withFallback(selectedText: string, fallback: string) {
@@ -60,6 +62,8 @@ export function formatSelection(selectedText: string, action: FormatAction) {
             .map((line) => `- ${line}`)
             .join("\n")
         : `- ${placeholders.list}`;
+    case "blankLine":
+      return "<br><br>";
     case "align-left":
       return `<div style="text-align: left;">\n${withFallback(selectedText, "左对齐内容")}\n</div>`;
     case "align-center":

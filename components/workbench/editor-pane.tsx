@@ -21,6 +21,7 @@ import {
   FiItalic,
   FiLink2,
   FiList,
+  FiPlus,
   FiUnderline,
 } from "react-icons/fi";
 import { TbH1, TbH2, TbH3 } from "react-icons/tb";
@@ -74,7 +75,10 @@ const toolbarGroups: {
     { id: "image", label: "插入图片", icon: <FiImage className="h-4 w-4" /> },
     { id: "code", label: "插入代码", icon: <FiCode className="h-4 w-4" /> },
   ],
-  [{ id: "list", label: "无序列表", icon: <FiList className="h-4 w-4" /> }],
+  [
+    { id: "list", label: "无序列表", icon: <FiList className="h-4 w-4" /> },
+    { id: "blankLine", label: "插入空行", icon: <FiPlus className="h-4 w-4" /> },
+  ],
 ];
 
 const alignmentLabels: Record<AlignmentOption, string> = {

@@ -16,3 +16,7 @@ test("alignment formatting wraps content in an HTML block", () => {
     '<div style="text-align: center;">\n正文\n</div>',
   );
 });
+
+test("blank-line formatting inserts explicit break markup", () => {
+  assert.equal(formatSelection("", "blankLine"), "<br><br>");
+});
