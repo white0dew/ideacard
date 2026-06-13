@@ -185,12 +185,12 @@ const CardContainer = styled.article`
 
   .card-content {
     font-size: var(--social-body-font-size, ${toPx(BASE_BODY_FONT_SIZE)});
-    line-height: 1.22;
+    line-height: var(--social-line-height, 1.22);
   }
 
   .card-content p {
     margin: 0 0 10px;
-    line-height: 1.22;
+    line-height: var(--social-line-height, 1.22);
   }
 
   .md-h1 {
@@ -235,7 +235,7 @@ const CardContainer = styled.article`
     padding: 7px 0 7px 14px;
     border-left: 3px solid #d4d4d4;
     color: #555;
-    line-height: 1.18;
+    line-height: var(--social-line-height, 1.18);
     background: rgba(0, 0, 0, 0.02);
   }
 
@@ -305,7 +305,7 @@ const CardContainer = styled.article`
 
   .md-listitem {
     margin: 4px 0;
-    line-height: 1.18;
+    line-height: var(--social-line-height, 1.18);
   }
 
   .md-ul .md-listitem::marker,
@@ -321,7 +321,7 @@ const CardContainer = styled.article`
   }
 
   .md-text {
-    line-height: 1.22;
+    line-height: var(--social-line-height, 1.22);
   }
 
   .md-hr {
@@ -356,6 +356,7 @@ const Card: FC<CardProps> = ({
   const socialFontPreset = useSettingsStore((state) => state.socialFontPreset);
   const socialFontScaleMode = useSettingsStore((state) => state.socialFontScaleMode);
   const socialFontScale = useSettingsStore((state) => state.socialFontScale);
+  const socialLineHeight = useSettingsStore((state) => state.socialLineHeight);
   const socialProfile = resolveSocialProfile(
     {
       avatarUrl: socialProfileAvatarUrl,
@@ -380,6 +381,7 @@ const Card: FC<CardProps> = ({
     ["--social-font-family" as string]: getSocialNoteFontFamily(socialFontPreset),
     ["--social-font-scale" as string]: String(socialFontScale),
     ["--social-all-font-scale" as string]: String(allFontScale),
+    ["--social-line-height" as string]: String(socialLineHeight),
     ["--social-image-max-height" as string]: imageMaxHeight,
     ["--social-body-font-size" as string]:
       socialFontScaleMode === "body"

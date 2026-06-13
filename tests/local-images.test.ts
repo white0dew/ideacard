@@ -74,6 +74,6 @@ test("export pipeline disables cache busting for blob-backed local images", asyn
   const source = await readFile(new URL("../lib/export-to-image.ts", import.meta.url), "utf8");
 
   assert.match(source, /shouldCacheBustImages/);
-  assert.match(source, /img\[src\^=\"blob:/);
+  assert.match(source, /img\[src\^="blob:/);
   assert.match(source, /cacheBust: shouldCacheBustImages\(element\)/);
 });

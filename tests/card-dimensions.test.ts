@@ -27,7 +27,7 @@ test("settings store migrates and clamps persisted canvas dimensions", async () 
     "utf8",
   );
 
-  assert.match(source, /version:\s*12/);
+  assert.match(source, /version:\s*13/);
   assert.match(source, /clampCardWidth/);
   assert.match(source, /clampCardHeight/);
   assert.match(source, /cardWidth:\s*resolvedWidth/);

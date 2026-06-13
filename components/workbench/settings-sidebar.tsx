@@ -45,7 +45,6 @@ export default function SettingsSidebar() {
     cardHeight,
     selectedPreset,
     viewMode,
-    hideOverflow,
     selectedTheme,
     socialProfileName,
     socialProfileTimeLabel,
@@ -58,11 +57,11 @@ export default function SettingsSidebar() {
     socialFontPreset,
     socialFontScaleMode,
     socialFontScale,
+    socialLineHeight,
     setCardWidth,
     setCardHeight,
     setSelectedPreset,
     setViewMode,
-    setHideOverflow,
     setSelectedTheme,
     setSocialProfileName,
     setSocialProfileTimeLabel,
@@ -75,6 +74,7 @@ export default function SettingsSidebar() {
     setSocialFontPreset,
     setSocialFontScaleMode,
     setSocialFontScale,
+    setSocialLineHeight,
   } = useSettingsStore();
   const presetMeta = designPresets[selectedPreset];
   const avatarUploadId = useId();
@@ -86,6 +86,7 @@ export default function SettingsSidebar() {
     ? getDefaultSocialProfileTimeLabel()
     : socialProfileTimeLabel;
   const socialFontScaleLabel = `${socialFontScale.toFixed(2)}x`;
+  const socialLineHeightLabel = socialLineHeight.toFixed(2);
 
   useEffect(() => {
     setWidthInput(String(cardWidth));
@@ -247,8 +248,7 @@ export default function SettingsSidebar() {
               <div className="flex items-center gap-2">
                 <input
                   aria-label="卡片高度"
-                  className="w-20 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-sm text-slate-700 disabled:cursor-not-allowed disabled:bg-slate-100"
-                  disabled={viewMode === "长卡片"}
+                  className="w-20 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-sm text-slate-700"
                   min={MIN_CARD_HEIGHT}
                   onBlur={commitHeightInput}
                   onChange={(event) => setHeightInput(event.target.value)}
@@ -260,23 +260,6 @@ export default function SettingsSidebar() {
               </div>
             </label>
           </div>
-        </div>
-
-        <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-3">
-          <div>
-            <p className="text-sm text-slate-700">高度超出隐藏</p>
-            <p className="mt-1 text-xs text-slate-500">仅控制预览区域是否裁切超出内容。</p>
-          </div>
-          <button
-            aria-label="切换高度超出隐藏"
-            className={`flex h-6 w-12 items-center rounded-full px-1 transition-colors ${hideOverflow ? "bg-slate-900" : "bg-slate-200"}`}
-            onClick={() => setHideOverflow(!hideOverflow)}
-            type="button"
-          >
-            <span
-              className={`h-4 w-4 rounded-full bg-white transition-transform ${hideOverflow ? "translate-x-6" : "translate-x-0"}`}
-            />
-          </button>
         </div>
 
         <div>
@@ -351,115 +334,6 @@ export default function SettingsSidebar() {
               />
             </label>
 
-            <div className="flex gap-4">
-              <label className="flex-1 text-sm text-slate-600">
-                <span className="mb-2 block">首图顶部空白</span>
-                <div className="flex items-center gap-2">
-                  <input
-                    aria-label="首图顶部空白"
-                    className="w-20 rounded border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700"
-                    onChange={(event) => {
-                      const value = Number.parseInt(event.target.value, 10);
-                      if (!Number.isNaN(value)) {
-                        setSocialFirstPageTopOffset(value);
-                      }
-                    }}
-                    type="number"
-                    value={socialFirstPageTopOffset}
-                  />
-                  <span>px</span>
-                </div>
-              </label>
-              <label className="flex-1 text-sm text-slate-600">
-                <span className="mb-2 block">头像尺寸</span>
-                <div className="flex items-center gap-2">
-                  <input
-                    aria-label="头像尺寸"
-                    className="w-20 rounded border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700"
-                    onChange={(event) => {
-                      const value = Number.parseInt(event.target.value, 10);
-                      if (!Number.isNaN(value)) {
-                        setSocialAvatarSize(value);
-                      }
-                    }}
-                    type="number"
-                    value={socialAvatarSize}
-                  />
-                  <span>px</span>
-                </div>
-              </label>
-            </div>
-
-            <ColorPalettePicker
-              label="背景颜色"
-              onChange={setSocialBackgroundColor}
-              options={socialNoteBackgroundColors}
-              value={socialBackgroundColor}
-            />
-
-            <div>
-              <label className="mb-2 block text-sm text-slate-600" htmlFor="social-font-preset">
-                字体风格
-              </label>
-              <select
-                className="w-full rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-700"
-                id="social-font-preset"
-                onChange={(event) =>
-                  setSocialFontPreset(event.target.value as SocialNoteFontPreset)
-                }
-                value={socialFontPreset}
-              >
-                {socialNoteFontOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-3 rounded-xl border border-slate-200 bg-white/80 p-3">
-              <div className="flex items-center justify-between gap-3">
-                <label
-                  className="block text-sm text-slate-600"
-                  htmlFor="social-font-scale-mode"
-                >
-                  字号缩放
-                </label>
-                <span className="text-xs font-medium text-slate-500">{socialFontScaleLabel}</span>
-              </div>
-              <select
-                className="w-full rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-700"
-                id="social-font-scale-mode"
-                onChange={(event) =>
-                  setSocialFontScaleMode(event.target.value as SocialFontScaleMode)
-                }
-                value={socialFontScaleMode}
-              >
-                <option value="body">仅正文</option>
-                <option value="all">整体</option>
-              </select>
-              <input
-                className="w-full accent-slate-900"
-                id="social-font-scale"
-                max={1.3}
-                min={0.85}
-                onChange={(event) => setSocialFontScale(Number(event.target.value))}
-                step={0.05}
-                type="range"
-                value={socialFontScale}
-              />
-              <p className="text-xs leading-5 text-slate-500">
-                仅正文只调整正文基准字号；整体会连同标题、小字信息和列表一起缩放。
-              </p>
-            </div>
-
-            <ColorPalettePicker
-              label="重点字体颜色"
-              onChange={setSocialAccentColor}
-              options={socialNoteAccentColors}
-              value={socialAccentColor}
-            />
-
             <div className="space-y-3 rounded-xl border border-dashed border-slate-300 bg-white/70 p-3">
               <div className="flex flex-wrap items-center gap-3">
                 <label
@@ -491,6 +365,150 @@ export default function SettingsSidebar() {
               </p>
               {avatarError ? <p className="text-xs text-rose-500">{avatarError}</p> : null}
             </div>
+
+            <ColorPalettePicker
+              label="背景颜色"
+              onChange={setSocialBackgroundColor}
+              options={socialNoteBackgroundColors}
+              value={socialBackgroundColor}
+            />
+
+            <div>
+              <label className="mb-2 block text-sm text-slate-600" htmlFor="social-font-preset">
+                字体风格
+              </label>
+              <select
+                className="w-full rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-700"
+                id="social-font-preset"
+                onChange={(event) =>
+                  setSocialFontPreset(event.target.value as SocialNoteFontPreset)
+                }
+                value={socialFontPreset}
+              >
+                {socialNoteFontOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2 rounded-xl border border-slate-200 bg-white/80 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <label className="block text-sm text-slate-600" htmlFor="social-line-height">
+                  行距
+                </label>
+                <span className="text-xs font-medium text-slate-500">
+                  {socialLineHeightLabel}
+                </span>
+              </div>
+              <input
+                className="w-full accent-slate-900"
+                id="social-line-height"
+                max={1.6}
+                min={1.05}
+                onChange={(event) => setSocialLineHeight(Number(event.target.value))}
+                step={0.01}
+                type="range"
+                value={socialLineHeight}
+              />
+            </div>
+
+            <details className="group rounded-xl border border-slate-200 bg-white/80 p-3">
+              <summary className="cursor-pointer list-none text-sm font-medium text-slate-700">
+                更多社交图文设置
+                <span className="float-right text-xs text-slate-400 group-open:hidden">
+                  展开
+                </span>
+                <span className="float-right hidden text-xs text-slate-400 group-open:inline">
+                  收起
+                </span>
+              </summary>
+
+              <div className="mt-4 space-y-4">
+                <div className="flex gap-4">
+                  <label className="flex-1 text-sm text-slate-600">
+                    <span className="mb-2 block">首图顶部空白</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        aria-label="首图顶部空白"
+                        className="w-20 rounded border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700"
+                        onChange={(event) => {
+                          const value = Number.parseInt(event.target.value, 10);
+                          if (!Number.isNaN(value)) {
+                            setSocialFirstPageTopOffset(value);
+                          }
+                        }}
+                        type="number"
+                        value={socialFirstPageTopOffset}
+                      />
+                      <span>px</span>
+                    </div>
+                  </label>
+                  <label className="flex-1 text-sm text-slate-600">
+                    <span className="mb-2 block">头像尺寸</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        aria-label="头像尺寸"
+                        className="w-20 rounded border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700"
+                        onChange={(event) => {
+                          const value = Number.parseInt(event.target.value, 10);
+                          if (!Number.isNaN(value)) {
+                            setSocialAvatarSize(value);
+                          }
+                        }}
+                        type="number"
+                        value={socialAvatarSize}
+                      />
+                      <span>px</span>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <label
+                      className="block text-sm text-slate-600"
+                      htmlFor="social-font-scale-mode"
+                    >
+                      字号缩放
+                    </label>
+                    <span className="text-xs font-medium text-slate-500">{socialFontScaleLabel}</span>
+                  </div>
+                  <select
+                    className="w-full rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-700"
+                    id="social-font-scale-mode"
+                    onChange={(event) =>
+                      setSocialFontScaleMode(event.target.value as SocialFontScaleMode)
+                    }
+                    value={socialFontScaleMode}
+                  >
+                    <option value="body">仅正文</option>
+                    <option value="all">整体</option>
+                  </select>
+                  <input
+                    className="w-full accent-slate-900"
+                    id="social-font-scale"
+                    max={1.3}
+                    min={0.85}
+                    onChange={(event) => setSocialFontScale(Number(event.target.value))}
+                    step={0.05}
+                    type="range"
+                    value={socialFontScale}
+                  />
+                  <p className="text-xs leading-5 text-slate-500">
+                    仅正文只调整正文基准字号；整体会连同标题、小字信息和列表一起缩放。
+                  </p>
+                </div>
+
+                <ColorPalettePicker
+                  label="重点字体颜色"
+                  onChange={setSocialAccentColor}
+                  options={socialNoteAccentColors}
+                  value={socialAccentColor}
+                />
+              </div>
+            </details>
           </div>
         ) : null}
       </div>

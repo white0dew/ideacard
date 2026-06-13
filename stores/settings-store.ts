@@ -28,7 +28,7 @@ import {
 } from "@/lib/social-profile";
 import { defaultThemeName, resolveThemeName } from "@/lib/theme-selection";
 
-export const viewModes = ["长卡片", "短卡片"] as const;
+export const viewModes = ["短卡片"] as const;
 export type ViewMode = (typeof viewModes)[number];
 export type SocialFontScaleMode = "body" | "all";
 
@@ -37,7 +37,6 @@ interface SettingsState {
   cardHeight: number;
   selectedPreset: DesignPresetId;
   viewMode: ViewMode;
-  hideOverflow: boolean;
   selectedTheme: string;
   socialProfileName: string;
   socialProfileTimeLabel: string;
@@ -50,11 +49,11 @@ interface SettingsState {
   socialFontPreset: SocialNoteFontPreset;
   socialFontScaleMode: SocialFontScaleMode;
   socialFontScale: number;
+  socialLineHeight: number;
   setCardWidth: (width: number) => void;
   setCardHeight: (height: number) => void;
   setSelectedPreset: (preset: DesignPresetId) => void;
   setViewMode: (viewMode: ViewMode) => void;
-  setHideOverflow: (hideOverflow: boolean) => void;
   setSelectedTheme: (theme: string) => void;
   setSocialProfileName: (name: string) => void;
   setSocialProfileTimeLabel: (timeLabel: string) => void;
@@ -67,6 +66,7 @@ interface SettingsState {
   setSocialFontPreset: (preset: SocialNoteFontPreset) => void;
   setSocialFontScaleMode: (mode: SocialFontScaleMode) => void;
   setSocialFontScale: (scale: number) => void;
+  setSocialLineHeight: (lineHeight: number) => void;
 }
 
 const defaultWidth = defaultCanvasSize.width;
@@ -79,6 +79,9 @@ const maxSocialAvatarSize = 96;
 const minSocialFontScale = 0.85;
 const maxSocialFontScale = 1.3;
 const defaultSocialFontScale = 1;
+const minSocialLineHeight = 1.05;
+const maxSocialLineHeight = 1.6;
+const defaultSocialLineHeight = 1.22;
 
 function clampSocialFirstPageTopOffset(offset: number) {
   return Math.min(
@@ -95,6 +98,15 @@ function clampSocialFontScale(scale: number) {
   return Math.min(maxSocialFontScale, Math.max(minSocialFontScale, scale));
 }
 
+function clampSocialLineHeight(lineHeight: number) {
+  return Math.min(maxSocialLineHeight, Math.max(minSocialLineHeight, lineHeight));
+}
+
+function resolveViewMode(mode: ViewMode | string | null | undefined): ViewMode {
+  void mode;
+  return "短卡片";
+}
+
 function resolveSocialFontScaleMode(
   mode: SocialFontScaleMode | string | null | undefined,
 ): SocialFontScaleMode {
@@ -107,13 +119,18 @@ function resolveSocialFontScale(scale: unknown) {
     : defaultSocialFontScale;
 }
 
+function resolveSocialLineHeight(lineHeight: unknown) {
+  return typeof lineHeight === "number" && Number.isFinite(lineHeight)
+    ? clampSocialLineHeight(lineHeight)
+    : defaultSocialLineHeight;
+}
+
 function createDefaultSettingsState() {
   return {
     cardWidth: defaultWidth,
     cardHeight: clampCardHeight(defaultHeight),
     selectedPreset: defaultPresetId,
     viewMode: "短卡片" as ViewMode,
-    hideOverflow: false,
     selectedTheme: defaultThemeName,
     socialProfileName: defaultSocialState.name,
     socialProfileTimeLabel: defaultSocialState.timeLabel,
@@ -126,6 +143,7 @@ function createDefaultSettingsState() {
     socialFontPreset: defaultSocialNoteFontPreset,
     socialFontScaleMode: "body" as SocialFontScaleMode,
     socialFontScale: defaultSocialFontScale,
+    socialLineHeight: defaultSocialLineHeight,
   };
 }
 
@@ -197,8 +215,7 @@ const useSettingsStore = create<SettingsState>()(
             ),
           });
         },
-        setViewMode: (viewMode) => set({ viewMode }),
-        setHideOverflow: (hideOverflow) => set({ hideOverflow }),
+        setViewMode: (viewMode) => set({ viewMode: resolveViewMode(viewMode) }),
         setSelectedTheme: (selectedTheme) =>
           set({ selectedTheme: resolveThemeName(selectedTheme) }),
         setSocialProfileName: (socialProfileName) => set({ socialProfileName }),
@@ -238,11 +255,15 @@ const useSettingsStore = create<SettingsState>()(
           set({
             socialFontScale: resolveSocialFontScale(socialFontScale),
           }),
+        setSocialLineHeight: (socialLineHeight) =>
+          set({
+            socialLineHeight: resolveSocialLineHeight(socialLineHeight),
+          }),
       };
     },
     {
       name: "settings-storage",
-      version: 12,
+      version: 13,
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (_state, error) => {
         if (!error) {
@@ -289,11 +310,11 @@ const useSettingsStore = create<SettingsState>()(
         });
 
         return {
-          ...state,
+          ...createDefaultSettingsState(),
           cardWidth: resolvedWidth,
           cardHeight: resolvedHeight,
           selectedPreset: resolvedPreset,
-          viewMode: state.viewMode ?? "短卡片",
+          viewMode: resolveViewMode(state.viewMode),
           selectedTheme: resolveThemeName(state.selectedTheme),
           socialProfileName: socialProfile.name,
           socialProfileTimeLabel: state.socialProfileTimeLabel ?? socialProfile.timeLabel,
@@ -308,6 +329,7 @@ const useSettingsStore = create<SettingsState>()(
           socialFontPreset: resolveSocialNoteFontPreset(state.socialFontPreset),
           socialFontScaleMode: resolveSocialFontScaleMode(state.socialFontScaleMode),
           socialFontScale: resolveSocialFontScale(state.socialFontScale),
+          socialLineHeight: resolveSocialLineHeight(state.socialLineHeight),
         };
       },
     },

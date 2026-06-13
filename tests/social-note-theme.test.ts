@@ -149,6 +149,17 @@ test("settings store persists social-note font scale settings", async () => {
   assert.match(storeText, /setSocialFontScale/);
 });
 
+test("settings store persists social-note line height settings", async () => {
+  const storeText = await readFile(
+    new URL("../stores/settings-store.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(storeText, /socialLineHeight/);
+  assert.match(storeText, /setSocialLineHeight/);
+  assert.match(storeText, /resolveSocialLineHeight/);
+});
+
 test("settings sidebar exposes social-note font scale controls", async () => {
   const sidebarText = await readFile(
     new URL("../components/workbench/settings-sidebar.tsx", import.meta.url),
@@ -160,6 +171,19 @@ test("settings sidebar exposes social-note font scale controls", async () => {
   assert.match(sidebarText, /social-font-scale/);
   assert.match(sidebarText, /仅正文/);
   assert.match(sidebarText, /整体/);
+});
+
+test("settings sidebar exposes social-note line height and folds advanced controls", async () => {
+  const sidebarText = await readFile(
+    new URL("../components/workbench/settings-sidebar.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(sidebarText, /行距/);
+  assert.match(sidebarText, /social-line-height/);
+  assert.match(sidebarText, /setSocialLineHeight/);
+  assert.match(sidebarText, /<details/);
+  assert.match(sidebarText, /更多社交图文设置/);
 });
 
 test("social-note theme reads the font preset and uses a larger body font size", async () => {
@@ -185,6 +209,17 @@ test("social-note theme reads font scale settings and outputs scale variables", 
   assert.match(cardText, /--social-font-scale/);
   assert.match(cardText, /--social-body-font-size/);
   assert.match(cardText, /calc\(/);
+});
+
+test("social-note theme reads line height setting and outputs a line-height variable", async () => {
+  const cardText = await readFile(
+    new URL("../components/cards/SocialNoteCard.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(cardText, /socialLineHeight/);
+  assert.match(cardText, /--social-line-height/);
+  assert.match(cardText, /line-height:\s*var\(--social-line-height/);
 });
 
 test("social-note theme caps markdown image height with the shared ratio variable", async () => {

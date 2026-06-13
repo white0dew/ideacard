@@ -21,6 +21,7 @@ import {
   FiItalic,
   FiLink2,
   FiList,
+  FiPlus,
   FiUnderline,
 } from "react-icons/fi";
 import { TbH1, TbH2, TbH3 } from "react-icons/tb";
@@ -47,11 +48,21 @@ const persistDelayMs = 180;
 const localImageAccept = "image/png,image/jpeg,image/webp,image/gif,image/svg+xml";
 
 type EditorInstance = {
+  addCommand: (keybinding: number, handler: () => void) => void;
   executeEdits: (source: string, edits: { range: unknown; text: string }[]) => void;
   focus: () => void;
   getModel: () => { getValueInRange: (range: unknown) => string } | null;
   getSelection: () => unknown;
   pushUndoStop: () => void;
+};
+
+type MonacoInstance = {
+  KeyCode: Record<string, number>;
+  KeyMod: {
+    Alt: number;
+    CtrlCmd: number;
+    Shift: number;
+  };
 };
 
 const toolbarGroups: {
@@ -79,9 +90,37 @@ const toolbarGroups: {
     {
       id: "blankLine",
       label: "插入空行",
-      icon: <span className="px-1 text-sm font-medium">空行</span>,
+      icon: <FiPlus className="h-4 w-4" />,
     },
   ],
+];
+
+const shortcutLabels: Partial<Record<FormatAction, string>> = {
+  h1: "Ctrl/Cmd+Alt+1",
+  h2: "Ctrl/Cmd+Alt+2",
+  h3: "Ctrl/Cmd+Alt+3",
+  bold: "Ctrl/Cmd+B",
+  italic: "Ctrl/Cmd+I",
+  underline: "Ctrl/Cmd+U",
+  link: "Ctrl/Cmd+K",
+  code: "Ctrl/Cmd+E",
+  list: "Ctrl/Cmd+Shift+8",
+};
+
+const shortcutActions: {
+  action: FormatAction;
+  keyCode: string;
+  modifiers?: "alt" | "shift";
+}[] = [
+  { action: "bold", keyCode: "KeyB" },
+  { action: "italic", keyCode: "KeyI" },
+  { action: "underline", keyCode: "KeyU" },
+  { action: "link", keyCode: "KeyK" },
+  { action: "code", keyCode: "KeyE" },
+  { action: "list", keyCode: "Digit8", modifiers: "shift" },
+  { action: "h1", keyCode: "Digit1", modifiers: "alt" },
+  { action: "h2", keyCode: "Digit2", modifiers: "alt" },
+  { action: "h3", keyCode: "Digit3", modifiers: "alt" },
 ];
 
 const alignmentLabels: Record<AlignmentOption, string> = {
@@ -141,6 +180,10 @@ export default function EditorPane() {
       label: alignmentLabels[option],
     })),
     [],
+  );
+  const markdownCharacterCount = useMemo(
+    () => Array.from(draftContent.replace(/\s/g, "")).length,
+    [draftContent],
   );
 
   useEffect(() => {
@@ -223,12 +266,7 @@ export default function EditorPane() {
     await insertLocalImage(file);
   };
 
-  const handleToolbarAction = (action: FormatAction) => {
-    if (action === "image") {
-      imageUploadRef.current?.click();
-      return;
-    }
-
+  const applyMarkdownFormat = (action: FormatAction) => {
     const editor = editorRef.current;
     if (!editor) {
       return;
@@ -243,8 +281,39 @@ export default function EditorPane() {
     const nextText = formatSelection(selectedText, action);
 
     editor.executeEdits("markdown-format", [{ range: selection, text: nextText }]);
+    editor.pushUndoStop();
+    editor.focus();
     setAlignmentMenuOpen(false);
     setImageMessage(null);
+  };
+
+  const handleToolbarAction = (action: FormatAction) => {
+    if (action === "image") {
+      imageUploadRef.current?.click();
+      return;
+    }
+
+    applyMarkdownFormat(action);
+  };
+
+  const registerMarkdownShortcuts = (editor: EditorInstance, monaco: MonacoInstance) => {
+    shortcutActions.forEach(({ action, keyCode, modifiers }) => {
+      const baseKeyCode = monaco.KeyCode[keyCode];
+      if (!baseKeyCode) {
+        return;
+      }
+
+      const modifier =
+        modifiers === "alt"
+          ? monaco.KeyMod.Alt
+          : modifiers === "shift"
+            ? monaco.KeyMod.Shift
+            : 0;
+
+      editor.addCommand(monaco.KeyMod.CtrlCmd | modifier | baseKeyCode, () => {
+        applyMarkdownFormat(action);
+      });
+    });
   };
 
   const handlePasteCapture = async (event: ClipboardEvent<HTMLDivElement>) => {
@@ -275,7 +344,11 @@ export default function EditorPane() {
                 className="rounded-lg p-2 text-slate-600 transition hover:bg-white hover:text-slate-900"
                 onClick={() => handleToolbarAction(action.id)}
                 onMouseDown={(event) => event.preventDefault()}
-                title={action.label}
+                title={
+                  shortcutLabels[action.id]
+                    ? `${action.label} (${shortcutLabels[action.id]})`
+                    : action.label
+                }
                 type="button"
               >
                 {action.icon}
@@ -346,8 +419,10 @@ export default function EditorPane() {
               draftContentRef.current = nextContent;
               setDraftContent(nextContent);
             }}
-            onMount={(editor) => {
-              editorRef.current = editor as unknown as EditorInstance;
+            onMount={(editor, monaco) => {
+              const mountedEditor = editor as unknown as EditorInstance;
+              editorRef.current = mountedEditor;
+              registerMarkdownShortcuts(mountedEditor, monaco as unknown as MonacoInstance);
             }}
             options={{
               automaticLayout: true,
@@ -372,6 +447,10 @@ export default function EditorPane() {
             正在恢复编辑内容...
           </div>
         )}
+      </div>
+      <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/80 px-4 py-2 text-xs text-slate-500">
+        <span>Markdown</span>
+        <span className="font-medium text-slate-600">总字数 {markdownCharacterCount}</span>
       </div>
     </section>
   );

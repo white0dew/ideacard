@@ -29,6 +29,22 @@ test("preview pane exposes a dedicated vertical scroll area for the rendered car
   assert.match(globalStyles, /scrollbar-width:\s*thin/);
 });
 
+test("preview pane no longer exposes long-card or overflow clipping modes", async () => {
+  const [previewSource, settingsSource] = await Promise.all([
+    readFile(
+      new URL("../components/workbench/preview-pane.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../stores/settings-store.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.doesNotMatch(previewSource, /LongMarkdownViewer/);
+  assert.doesNotMatch(previewSource, /hideOverflow/);
+  assert.match(previewSource, /overflow-visible/);
+  assert.match(settingsSource, /viewModes\s*=\s*\["短卡片"\]/);
+  assert.doesNotMatch(settingsSource, /setHideOverflow/);
+});
+
 test("editor pane waits for persisted editor state before mounting monaco", async () => {
   const source = await readFile(
     new URL("../components/workbench/editor-pane.tsx", import.meta.url),

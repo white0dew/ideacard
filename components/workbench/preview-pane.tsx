@@ -4,7 +4,6 @@ import { startTransition, useDeferredValue, useEffect, useMemo, useRef, useState
 import usePersistHydration from "@/hooks/use-persist-hydration";
 import { cardComponents, defaultThemeName } from "@/lib/card-registry";
 import { resolveLocalImageMarkdown } from "@/lib/local-images";
-import LongMarkdownViewer from "@/lib/long-markdown-viewer";
 import { parseMarkdown } from "@/lib/markdown";
 import PaginatedMarkdownViewer from "@/lib/paginated-markdown-viewer";
 import { resolveThemeName } from "@/lib/theme-selection";
@@ -17,7 +16,6 @@ export default function PreviewPane() {
   const cardWidth = useSettingsStore((state) => state.cardWidth);
   const cardHeight = useSettingsStore((state) => state.cardHeight);
   const viewMode = useSettingsStore((state) => state.viewMode);
-  const hideOverflow = useSettingsStore((state) => state.hideOverflow);
   const editorHydrated = usePersistHydration(useEditorStore);
   const settingsHydrated = usePersistHydration(useSettingsStore);
   const previewReady = editorHydrated && settingsHydrated;
@@ -95,19 +93,13 @@ export default function PreviewPane() {
       </div>
       <div className="preview-scroll-area min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-2">
         <div
-          className={`mx-auto w-full ${hideOverflow ? "overflow-hidden" : "overflow-visible"}`}
+          className="mx-auto w-full overflow-visible"
           id="preview"
         >
           {!previewReady ? (
             <div className="flex min-h-[320px] items-center justify-center rounded-[20px] border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-500">
               正在恢复预览内容...
             </div>
-          ) : viewMode === "长卡片" ? (
-            <LongMarkdownViewer
-              CardComponent={selectedCard.component}
-              html={html}
-              pageWidth={cardWidth}
-            />
           ) : (
             <PaginatedMarkdownViewer
               CardComponent={selectedCard.component}
