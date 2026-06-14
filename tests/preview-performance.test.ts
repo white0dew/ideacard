@@ -45,6 +45,18 @@ test("preview pane no longer exposes long-card or overflow clipping modes", asyn
   assert.doesNotMatch(settingsSource, /setHideOverflow/);
 });
 
+test("preview pane displays export image count from rendered pages", async () => {
+  const source = await readFile(
+    new URL("../components/workbench/preview-pane.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /exportImageCount/);
+  assert.match(source, /MutationObserver/);
+  assert.match(source, /querySelectorAll\("\.pages-wrapper > \*"\)/);
+  assert.match(source, /导出图片 \{exportImageCount\} 张/);
+});
+
 test("editor pane waits for persisted editor state before mounting monaco", async () => {
   const source = await readFile(
     new URL("../components/workbench/editor-pane.tsx", import.meta.url),

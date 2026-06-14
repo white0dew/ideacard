@@ -59,6 +59,17 @@ test("top bar exposes a copy-plain-text button beside export", async () => {
   assert.match(topBarText, /copyStatus/);
 });
 
+test("top bar links to the public GitHub repository", async () => {
+  const topBarText = await readFile(
+    new URL("../components/workbench/top-bar.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(topBarText, /FiGithub/);
+  assert.match(topBarText, /https:\/\/github\.com\/white0dew\/ideacard/);
+  assert.match(topBarText, /在 GitHub 上查看 ideaCard/);
+});
+
 test("workbench copies rendered plain text through the clipboard api", async () => {
   const workbenchText = await readFile(
     new URL("../components/workbench/workbench.tsx", import.meta.url),

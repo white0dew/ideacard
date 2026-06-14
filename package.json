@@ -1,8 +1,16 @@
 {
   "name": "ideacard",
-  "private": true,
   "version": "0.1.0",
+  "license": "MIT",
   "type": "module",
+  "homepage": "https://ideacard.aistar.cool",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/white0dew/ideacard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/white0dew/ideacard/issues"
+  },
   "scripts": {
     "sync:monaco": "node scripts/sync-monaco-assets.mjs",
     "predev": "pnpm sync:monaco",

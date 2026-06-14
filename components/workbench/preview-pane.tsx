@@ -21,6 +21,8 @@ export default function PreviewPane() {
   const previewReady = editorHydrated && settingsHydrated;
   const deferredContent = useDeferredValue(previewReady ? content : "");
   const [html, setHtml] = useState("");
+  const [exportImageCount, setExportImageCount] = useState(0);
+  const previewRef = useRef<HTMLDivElement | null>(null);
   const localImageCleanupRef = useRef<() => void>(() => undefined);
   const resolvedThemeName = useMemo(() => resolveThemeName(selectedTheme), [selectedTheme]);
 
@@ -30,6 +32,25 @@ export default function PreviewPane() {
   );
 
   useEffect(() => () => localImageCleanupRef.current(), []);
+
+  useEffect(() => {
+    const preview = previewRef.current;
+    if (!preview) {
+      setExportImageCount(0);
+      return undefined;
+    }
+
+    const updateExportImageCount = () => {
+      const pageCount = preview.querySelectorAll(".pages-wrapper > *").length;
+      setExportImageCount(pageCount || (html ? 1 : 0));
+    };
+
+    updateExportImageCount();
+
+    const observer = new MutationObserver(updateExportImageCount);
+    observer.observe(preview, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [html]);
 
   useEffect(() => {
     localImageCleanupRef.current();
@@ -95,6 +116,7 @@ export default function PreviewPane() {
         <div
           className="mx-auto w-full overflow-visible"
           id="preview"
+          ref={previewRef}
         >
           {!previewReady ? (
             <div className="flex min-h-[320px] items-center justify-center rounded-[20px] border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-500">
@@ -109,6 +131,10 @@ export default function PreviewPane() {
             />
           )}
         </div>
+      </div>
+      <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-3 text-xs text-slate-500">
+        <span>预览统计</span>
+        <span className="font-medium text-slate-600">导出图片 {exportImageCount} 张</span>
       </div>
     </section>
   );

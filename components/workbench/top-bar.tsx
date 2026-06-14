@@ -1,3 +1,7 @@
+import { FiGithub } from "react-icons/fi";
+
+const repositoryUrl = "https://github.com/white0dew/ideacard";
+
 interface TopBarProps {
   copyStatus: "idle" | "copying" | "success" | "error";
   exportStatus: "idle" | "exporting" | "success" | "error";
@@ -42,6 +46,16 @@ export default function TopBar({
         >
           {buttonLabel}
         </button>
+        <a
+          aria-label="在 GitHub 上查看 ideaCard"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-300"
+          href={repositoryUrl}
+          rel="noreferrer"
+          target="_blank"
+          title="GitHub"
+        >
+          <FiGithub className="h-5 w-5" />
+        </a>
       </div>
     </header>
   );
